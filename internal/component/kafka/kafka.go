@@ -31,8 +31,6 @@ type Kafka struct {
 	brokers         []string
 	logger          logger.Logger
 	authType        string
-	saslUsername    string
-	saslPassword    string
 	initialOffset   int64
 	cg              sarama.ConsumerGroup
 	cancel          context.CancelFunc
@@ -97,15 +95,16 @@ func (k *Kafka) Init(metadata map[string]string) error {
 		}
 	case passwordAuthType:
 		k.logger.Info("Configuring SASL Password authentication")
-		k.saslUsername = meta.SaslUsername
-		k.saslPassword = meta.SaslPassword
-		updatePasswordAuthInfo(config, k.saslUsername, k.saslPassword)
+		updatePasswordAuthInfo(config, meta.SaslUsername, meta.SaslPassword)
 	case mtlsAuthType:
 		k.logger.Info("Configuring mTLS authentcation")
 		err = updateMTLSAuthInfo(config, meta)
 		if err != nil {
 			return err
 		}
+	case krb5AuthType:
+		k.logger.Info("Configuring SASL Kerberos authentication")
+		updateKrb5AuthInfo(config, meta)
 	}
 
 	k.config = config

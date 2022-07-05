@@ -33,10 +33,19 @@ const (
 	consumeRetryInterval = "consumeRetryInterval"
 	authType             = "authType"
 	passwordAuthType     = "password"
+	krb5AuthType         = "krb5"
 	oidcAuthType         = "oidc"
 	mtlsAuthType         = "mtls"
 	noAuthType           = "none"
 )
+
+type gssapiMetadata struct {
+	ServiceName    string
+	Krb5ConfigPath string
+	Realm          string
+	UserName       string
+	KeyTabPath     string
+}
 
 type kafkaMetadata struct {
 	Brokers              []string
@@ -59,6 +68,7 @@ type kafkaMetadata struct {
 	ConsumeRetryEnabled  bool
 	ConsumeRetryInterval time.Duration
 	Version              sarama.KafkaVersion
+	GSSAPI               gssapiMetadata
 }
 
 // upgradeMetadata updates metadata properties based on deprecated usage.
@@ -200,6 +210,22 @@ func (k *Kafka) getKafkaMetadata(metadata map[string]string) (*kafkaMetadata, er
 			return nil, errors.New("kafka error: clientKey or clientCert is missing")
 		}
 		k.logger.Debug("Configuring mTLS authentication.")
+	case krb5AuthType:
+		meta.AuthType = val
+		// ...
+		if val, ok = metadata["saslUsername"]; ok && val != "" {
+			meta.SaslUsername = val
+		} else {
+			return nil, errors.New("kafka error: missing SASL Username for authType 'password'")
+		}
+
+		if val, ok = metadata["saslPassword"]; ok && val != "" {
+			meta.SaslPassword = val
+		} else {
+			return nil, errors.New("kafka error: missing SASL Password for authType 'password'")
+		}
+
+		k.logger.Debug("Configuring SASL GSSAPI (Kerberos) authentication.")
 	case noAuthType:
 		meta.AuthType = val
 		k.logger.Debug("No authentication configured.")
