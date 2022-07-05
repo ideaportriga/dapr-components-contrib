@@ -41,15 +41,32 @@ func updateMTLSAuthInfo(config *sarama.Config, metadata *kafkaMetadata) error {
 	return nil
 }
 
+// Config https://github.com/twmb/franz-go/issues/40#issuecomment-855576783
+func updateKrb5AuthInfo(config *sarama.Config, metadata *kafkaMetadata) {
+	config.Net.SASL.Enable = true
+	config.Net.SASL.Mechanism = sarama.SASLTypeGSSAPI
+	// config.Net.SASL.GSSAPI.AuthType = sarama.KRB5_KEYTAB_AUTH
+
+	// Custom metadata
+	config.Net.SASL.GSSAPI.AuthType = sarama.KRB5_KEYTAB_AUTH
+	config.Net.SASL.GSSAPI.ServiceName = metadata.GSSAPI.ServiceName           // "kafka"
+	config.Net.SASL.GSSAPI.KerberosConfigPath = metadata.GSSAPI.Krb5ConfigPath // "C:\\krb5.conf"
+	config.Net.SASL.GSSAPI.Realm = metadata.GSSAPI.Realm                       //"BOTECH.COM"
+	config.Net.SASL.GSSAPI.Username = metadata.GSSAPI.UserName                 // "qdgakk"
+	config.Net.SASL.GSSAPI.KeyTabPath = metadata.GSSAPI.KeyTabPath             //"C:\\user.keytab"
+}
+
 func updateTLSConfig(config *sarama.Config, metadata *kafkaMetadata) error {
 	if metadata.TLSDisable || metadata.AuthType == noAuthType {
 		config.Net.TLS.Enable = false
 		return nil
 	}
-	if !metadata.TLSSkipVerify && metadata.TLSCaCert == "" {
+	if metadata.TLSSkipVerify { //|| metadata.TLSCaCert == "" {
 		config.Net.TLS.Enable = false
 		return nil
 	}
+
+	config.Net.TLS.Enable = !metadata.TLSDisable
 
 	// nolint: gosec
 	config.Net.TLS.Config = &tls.Config{InsecureSkipVerify: metadata.TLSSkipVerify, MinVersion: tls.VersionTLS12}
