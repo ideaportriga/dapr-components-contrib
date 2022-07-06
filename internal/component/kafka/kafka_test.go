@@ -49,6 +49,25 @@ func getMetadata() map[string]string {
 	}
 }
 
+func getRbcMetadata() map[string]string {
+	return map[string]string{
+		"brokers":  "ulvkft001.saifg.rbc.com:9092,ulvkft002.saifg.rbc.com:9092,ulvkft003.saifg.rbc.com:9092,ulvkft004.saifg.rbc.com:9092",
+		"authType": "krb5",
+		// "saslUsername":  "$ConnectionString",
+		// "saslPassword":  "Endpoint=sb://myiprdapr.servicebus.windows.net/;SharedAccessKeyName=test_key;SharedAccessKey=9LRKEaAc6AyHPgHxEvo0mw8QtKqtRRnjTFuUcUrhGBU=;EntityPath=topic1",
+		"consumerGroup": "testConsumerGroup",
+		"initialOffset": "oldest",
+		// "authRequired": "true",
+		// "skipVerify": "true",
+		// "version": "1.0.0",
+		"krb5ServiceName": "kafka",
+		"krb5ConfigPath":  "./krb5.conf",
+		"krb5Realm":       "SAIFG.RBC.COM",
+		"krb5UserName":    "SCDX0SRVDDEV01PC@SAIFG.RBC.COM",
+		"krb5KeyTabPath":  "./SCDX0SRVDDEV01PC.keytab",
+	}
+}
+
 func TestPublishing(t *testing.T) {
 	// Comment out the following line to execute this test
 	if os.Getenv("TEST_WIP") == "" {
@@ -58,7 +77,7 @@ func TestPublishing(t *testing.T) {
 	k := getKafka()
 
 	t.Run("verify publishing", func(t *testing.T) {
-		err := k.Init(getMetadata())
+		err := k.Init(getRbcMetadata())
 		require.NoError(t, err)
 		for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 			err := k.Publish("topic1", []byte(word), nil)
