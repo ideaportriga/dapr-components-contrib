@@ -61,70 +61,77 @@ func TestPublishing(t *testing.T) {
 		require.NoError(t, err)
 		for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 			err := k.Publish("topic1", []byte(word), nil)
-			require.Nil(t, err)
+			require.NoError(t, err)
 		}
 	})
 }
 
 func TestConsuming(t *testing.T) {
-	// // Comment out the following line to execute this test
-	// if os.Getenv("TEST_WIP") == "" {
-	// 	t.Skip("Skipping not finished test")
-	// }
+	// Comment out the following line to execute this test
+	if os.Getenv("TEST_WIP") == "" {
+		t.Skip("Skipping not finished test")
+	}
 
 	k := getKafka()
 	err := k.Init(getMetadata())
 	require.NoError(t, err)
 
-	k.AddTopicHandler("topic1", adaptHandler(handler))
-	ctx := context.Background()
-
-	t.Run("verify publishing", func(t *testing.T) {
-
-		// k.Subscribe("topic1", func(msg *sarama.ConsumerMessage) {
-		// 	t.Logf("Received message: %s", string(msg.Value))
-		// }
-
-		// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
-		// 	err := k.Publish("topic1", []byte(word), nil)
-		// 	require.Nil(t, err)
-		// }
-
-		go func() {
-			// Wait for context cancelation
-			select {
-			case <-ctx.Done():
-			case <-p.subscribeCtx.Done():
-			}
-
-			// Remove the topic handler before restarting the subscriber
-			k.RemoveTopicHandler(req.Topic)
-
-			// If the component's context has been canceled, do not re-subscribe
-			if p.subscribeCtx.Err() != nil {
-				return
-			}
-
-			err := k.Subscribe(ctx)
-			if err != nil {
-				p.logger.Errorf("kafka pubsub: error re-subscribing: %v", err)
-			}
-		}()
-
-		return k.Subscribe(ctx)
-
+	//k.AddTopicHandler("topic1", adaptHandler(handler))
+	k.AddTopicHandler("topic1", func(ctx context.Context, msg *NewEvent) error {
+		return nil
 	})
+	ctx := context.Background()
+	err = k.Subscribe(ctx)
+	require.NoError(t, err)
 
-	ah := adaptHandler(handler)
-	for _, t := range b.topics {
-		b.kafka.AddTopicHandler(t, ah)
-	}
+	// t.Run("verify consuming", func(t *testing.T) {
+
+	// 	// k.Subscribe("topic1", func(msg *sarama.ConsumerMessage) {
+	// 	// 	t.Logf("Received message: %s", string(msg.Value))
+	// 	// }
+
+	// 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
+	// 	// 	err := k.Publish("topic1", []byte(word), nil)
+	// 	// 	require.Nil(t, err)
+	// 	// }
+
+	// 	go func() {
+	// 		// Wait for context cancelation
+	// 		select {
+	// 		case <-ctx.Done():
+	// 		case <-p.subscribeCtx.Done():
+	// 		}
+
+	// 		// Remove the topic handler before restarting the subscriber
+	// 		k.RemoveTopicHandler(req.Topic)
+
+	// 		// If the component's context has been canceled, do not re-subscribe
+	// 		if p.subscribeCtx.Err() != nil {
+	// 			return
+	// 		}
+
+	// 		err := k.Subscribe(ctx)
+	// 		if err != nil {
+	// 			p.logger.Errorf("kafka pubsub: error re-subscribing: %v", err)
+	// 		}
+	// 	}()
+
+	// 	return k.Subscribe(ctx)
+
+	// })
+
+	// ah := adaptHandler(handler)
+	// for _, t := range b.topics {
+	// 	k.AddTopicHandler(t, ah)
+	// }
+	// ah := adaptHandler(handler)
+	// k.AddTopicHandler("topic1", ah)
 
 	// Subscribe, in a background goroutine
-	err := b.kafka.Subscribe(context.Background())
-	if err != nil {
-		return err
-	}
+	// err := k.Subscribe(ctx)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// Wait until we exit
 	sigCh := make(chan os.Signal, 1)

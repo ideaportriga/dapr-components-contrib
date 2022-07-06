@@ -37,7 +37,7 @@ Y2FDZXJ0
 )
 
 func getKafka() *Kafka {
-	return &Kafka{logger: logger.NewLogger("kafka_test")}
+	return NewKafka(logger.NewLogger("kafka_test"))
 }
 
 func getBaseMetadata() map[string]string {
