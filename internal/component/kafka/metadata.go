@@ -213,16 +213,34 @@ func (k *Kafka) getKafkaMetadata(metadata map[string]string) (*kafkaMetadata, er
 	case krb5AuthType:
 		meta.AuthType = val
 		// ...
-		if val, ok = metadata["saslUsername"]; ok && val != "" {
-			meta.SaslUsername = val
+		if val, ok = metadata["krb5ServiceName"]; ok && val != "" {
+			meta.GSSAPI.ServiceName = val
 		} else {
-			return nil, errors.New("kafka error: missing SASL Username for authType 'password'")
+			return nil, errors.New("kafka error: missing Kerberos Service Name for authType 'krb5'")
 		}
 
-		if val, ok = metadata["saslPassword"]; ok && val != "" {
-			meta.SaslPassword = val
+		if val, ok = metadata["krb5ConfigPath"]; ok && val != "" {
+			meta.GSSAPI.Krb5ConfigPath = val
 		} else {
-			return nil, errors.New("kafka error: missing SASL Password for authType 'password'")
+			return nil, errors.New("kafka error: missing path to krb5.conf for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5Realm"]; ok && val != "" {
+			meta.GSSAPI.Realm = val
+		} else {
+			return nil, errors.New("kafka error: missing Realm for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5UserName"]; ok && val != "" {
+			meta.GSSAPI.UserName = val
+		} else {
+			return nil, errors.New("kafka error: missing User Name for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5KeyTabPath"]; ok && val != "" {
+			meta.GSSAPI.KeyTabPath = val
+		} else {
+			return nil, errors.New("kafka error: missing User KeyTab path for authType 'krb5'")
 		}
 
 		k.logger.Debug("Configuring SASL GSSAPI (Kerberos) authentication.")
