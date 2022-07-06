@@ -42,6 +42,7 @@ func getMetadata() map[string]string {
 		"saslUsername":  "$ConnectionString",
 		"saslPassword":  "Endpoint=sb://myiprdapr.servicebus.windows.net/;SharedAccessKeyName=test_key;SharedAccessKey=9LRKEaAc6AyHPgHxEvo0mw8QtKqtRRnjTFuUcUrhGBU=;EntityPath=topic1",
 		"consumerGroup": "testConsumerGroup",
+		"initialOffset": "oldest",
 		// "authRequired": "true",
 		// "skipVerify": "true",
 		// "version": "1.0.0",
