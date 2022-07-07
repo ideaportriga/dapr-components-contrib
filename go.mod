@@ -23,7 +23,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.18
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.11
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/Shopify/sarama v1.23.1
+	github.com/Shopify/sarama v1.34.1
 	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
 	github.com/a8m/documentdb v1.3.1-0.20220405205223-5b41ba0aaeb1
 	github.com/aerospike/aerospike-client-go v4.5.0+incompatible
@@ -121,7 +121,7 @@ require (
 	go.mongodb.org/mongo-driver v1.5.1
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
 	google.golang.org/api v0.74.0
 	google.golang.org/genproto v0.0.0-20220405205423-9d709892a2bf
@@ -132,8 +132,6 @@ require (
 	gopkg.in/couchbaselabs/gojcbmock.v1 v1.0.4 // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/gorethink/gorethink.v4 v4.1.0 // indirect
-	gopkg.in/jcmturner/goidentity.v3 v3.0.0 // indirect
-	gopkg.in/jcmturner/gokrb5.v7 v7.3.0 // indirect
 	gopkg.in/kataras/go-serializer.v0 v0.0.4 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
@@ -194,6 +192,10 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect
 	github.com/hashicorp/go-hclog v1.0.0 // indirect
+	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
+	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
+	github.com/jcmturner/gokrb5/v8 v8.4.2 // indirect
+	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/k0kubun/pp v3.0.1+incompatible // indirect
 	github.com/knadh/koanf v1.4.1 // indirect
@@ -207,6 +209,7 @@ require (
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
+	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b // indirect
 	github.com/shirou/gopsutil v3.20.11+incompatible // indirect
@@ -297,7 +300,7 @@ require (
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
-	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/linkedin/goavro/v2 v2.9.8 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
@@ -316,7 +319,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rs/zerolog v1.25.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.21.6 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -332,8 +335,8 @@ require (
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
-	github.com/xdg-go/scram v1.0.2 // indirect
-	github.com/xdg-go/stringprep v1.0.2 // indirect
+	github.com/xdg-go/scram v1.1.1 // indirect
+	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.uber.org/atomic v1.9.0 // indirect
@@ -350,9 +353,6 @@ require (
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
-	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
-	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
-	gopkg.in/jcmturner/rpc.v1 v1.1.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
