@@ -85,7 +85,7 @@ func TestConsuming(t *testing.T) {
 
 	//k.AddTopicHandler("topic1", adaptHandler(handler))
 	k.AddTopicHandler("topic1", func(ctx context.Context, msg *NewEvent) error {
-		t.log(string(msg.Data))
+		t.Log(string(msg.Data))
 		return nil
 	})
 	ctx := context.Background()
