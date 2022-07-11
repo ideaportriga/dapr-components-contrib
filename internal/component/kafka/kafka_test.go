@@ -23,18 +23,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// var (
-// 	clientCertPemMock = `-----BEGIN CERTIFICATE-----
-// Y2xpZW50Q2VydA==
-// -----END CERTIFICATE-----`
-// 	clientKeyMock = `-----BEGIN RSA PRIVATE KEY-----
-// Y2xpZW50S2V5
-// -----END RSA PRIVATE KEY-----`
-// 	caCertMock = `-----BEGIN CERTIFICATE-----
-// Y2FDZXJ0
-// -----END CERTIFICATE-----`
-// )
-
 func getMetadata() map[string]string {
 	return map[string]string{
 		"brokers":       "myiprdapr.servicebus.windows.net:9093",
@@ -49,22 +37,21 @@ func getMetadata() map[string]string {
 	}
 }
 
-func getRbcMetadata() map[string]string {
+func getCustomMetadata() map[string]string {
 	return map[string]string{
-		"brokers":  "ulvkft001.saifg.rbc.com:9092,ulvkft002.saifg.rbc.com:9092,ulvkft003.saifg.rbc.com:9092,ulvkft004.saifg.rbc.com:9092",
-		"authType": "krb5",
-		// "saslUsername":  "$ConnectionString",
-		// "saslPassword":  "Endpoint=sb://myiprdapr.servicebus.windows.net/;SharedAccessKeyName=test_key;SharedAccessKey=9LRKEaAc6AyHPgHxEvo0mw8QtKqtRRnjTFuUcUrhGBU=;EntityPath=topic1",
-		"consumerGroup": "testConsumerGroup",
+		"brokers":       "brokerhost:9092",
+		"authType":      "krb5",
+		"clientID":      "SCDX0SRVDDEV01PC",
+		"consumerGroup": "cdx0-d-clients-dev01-fcg1",
 		"initialOffset": "oldest",
-		// "authRequired": "true",
 		// "skipVerify": "true",
-		// "version": "1.0.0",
-		"krb5ServiceName": "kafka",
-		"krb5ConfigPath":  "./krb5.conf",
-		"krb5Realm":       "SAIFG.RBC.COM",
-		"krb5UserName":    "SCDX0SRVDDEV01PC@SAIFG.RBC.COM",
-		"krb5KeyTabPath":  "./SCDX0SRVDDEV01PC.keytab",
+		"krb5ServiceName":     "kafka",
+		"krb5ConfigPath":      "C:/Workspace/cdx0-middleware/keytabs/krb5.conf",
+		"krb5Realm":           "{REALM}",
+		"krb5UserName":        "{CLIENTID}@{REALM}",
+		"krb5KeyTabPath":      "C:/Workspace/cdx0-middleware/keytabs/out4.keytab",
+		"krb5DisablePAFXFAST": "true",
+		"caCertPath":          "C:/Workspace/cdx0-middleware/keytabs/out.pem",
 	}
 }
 
@@ -98,60 +85,12 @@ func TestConsuming(t *testing.T) {
 
 	//k.AddTopicHandler("topic1", adaptHandler(handler))
 	k.AddTopicHandler("topic1", func(ctx context.Context, msg *NewEvent) error {
+		t.log(string(msg.Data))
 		return nil
 	})
 	ctx := context.Background()
 	err = k.Subscribe(ctx)
 	require.NoError(t, err)
-
-	// t.Run("verify consuming", func(t *testing.T) {
-
-	// 	// k.Subscribe("topic1", func(msg *sarama.ConsumerMessage) {
-	// 	// 	t.Logf("Received message: %s", string(msg.Value))
-	// 	// }
-
-	// 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
-	// 	// 	err := k.Publish("topic1", []byte(word), nil)
-	// 	// 	require.Nil(t, err)
-	// 	// }
-
-	// 	go func() {
-	// 		// Wait for context cancelation
-	// 		select {
-	// 		case <-ctx.Done():
-	// 		case <-p.subscribeCtx.Done():
-	// 		}
-
-	// 		// Remove the topic handler before restarting the subscriber
-	// 		k.RemoveTopicHandler(req.Topic)
-
-	// 		// If the component's context has been canceled, do not re-subscribe
-	// 		if p.subscribeCtx.Err() != nil {
-	// 			return
-	// 		}
-
-	// 		err := k.Subscribe(ctx)
-	// 		if err != nil {
-	// 			p.logger.Errorf("kafka pubsub: error re-subscribing: %v", err)
-	// 		}
-	// 	}()
-
-	// 	return k.Subscribe(ctx)
-
-	// })
-
-	// ah := adaptHandler(handler)
-	// for _, t := range b.topics {
-	// 	k.AddTopicHandler(t, ah)
-	// }
-	// ah := adaptHandler(handler)
-	// k.AddTopicHandler("topic1", ah)
-
-	// Subscribe, in a background goroutine
-	// err := k.Subscribe(ctx)
-	// if err != nil {
-	// 	return err
-	// }
 
 	// Wait until we exit
 	sigCh := make(chan os.Signal, 1)
@@ -161,5 +100,4 @@ func TestConsuming(t *testing.T) {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 	<-sigCh
-
 }
