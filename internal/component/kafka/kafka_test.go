@@ -48,7 +48,7 @@ func getCustomMetadata() map[string]string {
 		"krb5ServiceName":     "kafka",
 		"krb5ConfigPath":      "C:/Workspace/cdx0-middleware/keytabs/krb5.conf",
 		"krb5Realm":           "{REALM}",
-		"krb5UserName":        "{CLIENTID}@{REALM}",
+		"krb5UserName":        "{CLIENTID}",
 		"krb5KeyTabPath":      "C:/Workspace/cdx0-middleware/keytabs/out4.keytab",
 		"krb5DisablePAFXFAST": "true",
 		"caCertPath":          "C:/Workspace/cdx0-middleware/keytabs/out.pem",
@@ -64,7 +64,7 @@ func TestPublishing(t *testing.T) {
 	k := getKafka()
 
 	t.Run("verify publishing", func(t *testing.T) {
-		err := k.Init(getRbcMetadata())
+		err := k.Init(getCustomMetadata())
 		require.NoError(t, err)
 		for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 			err := k.Publish("topic1", []byte(word), nil)
@@ -80,7 +80,7 @@ func TestConsuming(t *testing.T) {
 	}
 
 	k := getKafka()
-	err := k.Init(getMetadata())
+	err := k.Init(getCustomMetadata())
 	require.NoError(t, err)
 
 	//k.AddTopicHandler("topic1", adaptHandler(handler))
