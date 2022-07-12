@@ -16,6 +16,7 @@ package kafka
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -27,16 +28,27 @@ const (
 	key                  = "partitionKey"
 	skipVerify           = "skipVerify"
 	caCert               = "caCert"
+	caCertPath           = "caCertPath"
 	clientCert           = "clientCert"
 	clientKey            = "clientKey"
 	consumeRetryEnabled  = "consumeRetryEnabled"
 	consumeRetryInterval = "consumeRetryInterval"
 	authType             = "authType"
 	passwordAuthType     = "password"
+	krb5AuthType         = "krb5"
 	oidcAuthType         = "oidc"
 	mtlsAuthType         = "mtls"
 	noAuthType           = "none"
 )
+
+type gssapiMetadata struct {
+	ServiceName     string
+	Krb5ConfigPath  string
+	Realm           string
+	UserName        string
+	KeyTabPath      string
+	DisablePAFXFAST bool
+}
 
 type kafkaMetadata struct {
 	Brokers              []string
@@ -53,12 +65,14 @@ type kafkaMetadata struct {
 	OidcScopes           []string
 	TLSDisable           bool
 	TLSSkipVerify        bool
-	TLSCaCert            string
+	TLSCaCert            []byte
+	TLSCaCertPath        string
 	TLSClientCert        string
 	TLSClientKey         string
 	ConsumeRetryEnabled  bool
 	ConsumeRetryInterval time.Duration
 	Version              sarama.KafkaVersion
+	GSSAPI               gssapiMetadata
 }
 
 // upgradeMetadata updates metadata properties based on deprecated usage.
@@ -200,6 +214,49 @@ func (k *Kafka) getKafkaMetadata(metadata map[string]string) (*kafkaMetadata, er
 			return nil, errors.New("kafka error: clientKey or clientCert is missing")
 		}
 		k.logger.Debug("Configuring mTLS authentication.")
+	case krb5AuthType:
+		meta.AuthType = val
+		// ...
+		if val, ok = metadata["krb5ServiceName"]; ok && val != "" {
+			meta.GSSAPI.ServiceName = val
+		} else {
+			return nil, errors.New("kafka error: missing Kerberos Service Name for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5ConfigPath"]; ok && val != "" {
+			meta.GSSAPI.Krb5ConfigPath = val
+		} else {
+			return nil, errors.New("kafka error: missing path to krb5.conf for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5Realm"]; ok && val != "" {
+			meta.GSSAPI.Realm = val
+		} else {
+			return nil, errors.New("kafka error: missing Realm for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5UserName"]; ok && val != "" {
+			meta.GSSAPI.UserName = val
+		} else {
+			return nil, errors.New("kafka error: missing User Name for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5KeyTabPath"]; ok && val != "" {
+			meta.GSSAPI.KeyTabPath = val
+		} else {
+			return nil, errors.New("kafka error: missing User KeyTab path for authType 'krb5'")
+		}
+
+		if val, ok = metadata["krb5DisablePAFXFAST"]; ok && val != "" {
+			boolVal, err := strconv.ParseBool(val)
+			if err != nil {
+				return nil, fmt.Errorf("kafka error: invalid value for '%s' attribute %w", "krb5DisablePAFXFAST", err)
+			}
+
+			meta.GSSAPI.DisablePAFXFAST = boolVal
+		}
+
+		k.logger.Debug("Configuring SASL GSSAPI (Kerberos) authentication.")
 	case noAuthType:
 		meta.AuthType = val
 		k.logger.Debug("No authentication configured.")
@@ -220,7 +277,20 @@ func (k *Kafka) getKafkaMetadata(metadata map[string]string) (*kafkaMetadata, er
 		if !isValidPEM(val) {
 			return nil, errors.New("kafka error: invalid ca certificate")
 		}
-		meta.TLSCaCert = val
+		meta.TLSCaCert = []byte(val)
+	}
+
+	// Load from CertPath only when  TLSCaCert is not set
+	if val, ok := metadata[caCertPath]; ok && val != "" && meta.TLSCaCert == nil {
+		valCaCert, err := os.ReadFile(val)
+		if err != nil {
+			return nil, fmt.Errorf("kafka error: failed to load CA certificate from path: %s, %w", val, err)
+		}
+
+		if !isValidPEMByBytes(valCaCert) {
+			return nil, fmt.Errorf("kafka error: invalid ca certificate loaded from path: %s", val)
+		}
+		meta.TLSCaCert = valCaCert
 	}
 
 	if val, ok := metadata["disableTls"]; ok && val != "" {

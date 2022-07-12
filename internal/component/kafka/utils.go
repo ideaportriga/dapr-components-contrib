@@ -52,6 +52,12 @@ func isValidPEM(val string) bool {
 	return block != nil
 }
 
+func isValidPEMByBytes(val []byte) bool {
+	block, _ := pem.Decode(val)
+
+	return block != nil
+}
+
 // Map of topics and their handlers
 type TopicHandlers map[string]EventHandler
 

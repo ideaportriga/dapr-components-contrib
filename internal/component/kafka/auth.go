@@ -41,19 +41,34 @@ func updateMTLSAuthInfo(config *sarama.Config, metadata *kafkaMetadata) error {
 	return nil
 }
 
+// Config https://github.com/twmb/franz-go/issues/40#issuecomment-855576783
+func updateKrb5AuthInfo(config *sarama.Config, metadata *kafkaMetadata) {
+	config.Net.SASL.Enable = true
+	config.Net.SASL.Mechanism = sarama.SASLTypeGSSAPI
+
+	// Custom metadata
+	config.Net.SASL.GSSAPI.AuthType = sarama.KRB5_KEYTAB_AUTH
+	config.Net.SASL.GSSAPI.ServiceName = metadata.GSSAPI.ServiceName
+	config.Net.SASL.GSSAPI.KerberosConfigPath = metadata.GSSAPI.Krb5ConfigPath
+	config.Net.SASL.GSSAPI.Realm = metadata.GSSAPI.Realm
+	config.Net.SASL.GSSAPI.Username = metadata.GSSAPI.UserName
+	config.Net.SASL.GSSAPI.KeyTabPath = metadata.GSSAPI.KeyTabPath
+	config.Net.SASL.GSSAPI.DisablePAFXFAST = metadata.GSSAPI.DisablePAFXFAST
+}
+
 func updateTLSConfig(config *sarama.Config, metadata *kafkaMetadata) error {
 	if metadata.TLSDisable || metadata.AuthType == noAuthType {
 		config.Net.TLS.Enable = false
 		return nil
 	}
-	if !metadata.TLSSkipVerify && metadata.TLSCaCert == "" {
+	if !metadata.TLSSkipVerify && metadata.TLSCaCert == nil {
 		config.Net.TLS.Enable = false
 		return nil
 	}
 
 	// nolint: gosec
 	config.Net.TLS.Config = &tls.Config{InsecureSkipVerify: metadata.TLSSkipVerify, MinVersion: tls.VersionTLS12}
-	if metadata.TLSCaCert != "" {
+	if metadata.TLSCaCert != nil {
 		caCertPool := x509.NewCertPool()
 		if ok := caCertPool.AppendCertsFromPEM([]byte(metadata.TLSCaCert)); !ok {
 			return errors.New("kafka error: unable to load ca certificate")
@@ -68,8 +83,8 @@ func updateTLSConfig(config *sarama.Config, metadata *kafkaMetadata) error {
 func updateOidcAuthInfo(config *sarama.Config, metadata *kafkaMetadata) error {
 	tokenProvider := newOAuthTokenSource(metadata.OidcTokenEndpoint, metadata.OidcClientID, metadata.OidcClientSecret, metadata.OidcScopes)
 
-	if metadata.TLSCaCert != "" {
-		err := tokenProvider.addCa(metadata.TLSCaCert)
+	if metadata.TLSCaCert != nil {
+		err := tokenProvider.addCa(string(metadata.TLSCaCert))
 		if err != nil {
 			return fmt.Errorf("kafka: error setting oauth client trusted CA: %w", err)
 		}
